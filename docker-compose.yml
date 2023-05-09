@@ -1,0 +1,32 @@
+version: '3'
+services:
+  ad_mysql:
+    container_name: ad_mysql
+    image: mysql/mysql-server:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: test
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_ROOT_HOST: '%'
+      TZ: Asia/Seoul
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./ad-server/mysql/conf.d:/etc/mysql/conf.d
+      - ./ad-server/mysql/dump:/docker-entrypoint-initdb.d
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+
+  ad-server:
+    container_name: ad-server
+    image: amazoncorretto:18
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./ad-server:/app
+    working_dir: /app
+    command: ["./gradlew", "bootrun"]
+    depends_on:
+      - ad_mysql
+    restart: always
